@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <link rel="stylesheet" href="style.css"> <!-- Reference to your CSS file -->
+    <script src="/socket.io/socket.io.js"></script> <!-- Ensure this path is correct -->
+    <script>
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const joinButton = document.getElementById('join-btn');
+            const chatBox = document.getElementById('chat-box');
+            const messagesDiv = document.getElementById('messages');
+            const messageInput = document.getElementById('message-input');
+            const usernameInput = document.getElementById('username');
+            const roomInput = document.getElementById('room');
+
+            joinButton.addEventListener('click', () => {
+                const username = usernameInput.value;
+                const room = roomInput.value;
+                if (username && room) {
+                    socket.emit('joinRoom', room);
+                    chatBox.style.display = 'block';
+                    messagesDiv.innerHTML += `<p><em>${username} has joined the room ${room}</em></p>`;
+                }
+            });
+
+            document.getElementById('send-btn').addEventListener('click', () => {
+                const message = messageInput.value;
+                const room = roomInput.value;
+                if (message && room) {
+                    socket.emit('chatMessage', { user: usernameInput.value, room, message });
+                    messageInput.value = ''; // Clear input
+                }
+            });
+
+            socket.on('chatMessage', (data) => {
+                messagesDiv.innerHTML += `<p><strong>${data.user}:</strong> ${data.message}</p>`;
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="room-join">
+            <input type="text" id="username" placeholder="Enter your name">
+            <input type="text" id="room" placeholder="Enter room name">
+            <button id="join-btn">Join Room</button>
+        </div>
+        <div class="chat-box" id="chat-box" style="display: none;">
+            <div id="messages"></div>
+            <input type="text" id="message-input" placeholder="Type a message...">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</body>
+</html>
